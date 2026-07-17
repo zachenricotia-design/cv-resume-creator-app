@@ -32,7 +32,7 @@ src/
 │   ├── layout/
 │   │   ├── Sidebar.jsx           # Section navigation & add-section buttons
 │   │   ├── Header.jsx
-│   │   └── PreviewPanel.jsx      # Live CV preview (optional)
+│   │   └── PreviewPanel.jsx      # Live PDF preview panel (renders the compiled PDF in-browser via iframe/object URL)
 │   ├── sections/
 │   │   ├── PersonalDetails.jsx
 │   │   ├── Experience.jsx
@@ -54,14 +54,14 @@ src/
 │       └── ExportModal.jsx       # Download options
 ├── pages/
 │   ├── BuilderPage.jsx           # Main builder UI
-│   └── LandingPage.jsx           # Optional intro page
+│   └── LandingPage.jsx           # Landing page with product overview & CTAs
 ├── hooks/
-│   ├── useCVStore.jsx             # Zustand or Context state
-│   └── useAutoSave.jsx
+│   ├── useCVStore.js             # Zustand or Context state
+│   └── useAutoSave.js
 ├── services/
-│   └── api.jsx                    # Axios instance & API calls
+│   └── api.js                    # Axios instance & API calls
 └── utils/
-    └── validators.jsx
+    └── validators.js
 ```
 
 ### 1.2 CV Sections & Fields
@@ -98,7 +98,7 @@ src/
 | Location     | text      |
 | Start Date   | month/yr  |
 | End Date     | month/yr or "Present" |
-| GPA          | text (optional) |
+| GPA/GWA      | text (optional) |
 | Notes        | textarea  |
 
 #### Awards *(repeatable)*
@@ -181,17 +181,52 @@ src/
 - Auto-save to `localStorage` on every change (debounced 1s).
 - Optional: sync to backend DB (requires auth).
 
-### 1.5 Export Flow
+### 1.5 PDF Preview & Export Flow
 
-1. User clicks **"Generate PDF"** button.
-2. Frontend POSTs full CV JSON (including base64 profile photo data) to `POST /api/cv/export`.
-3. Backend parses request, decodes the base64 image (if present), and writes it to a temporary compilation directory.
-4. Backend runs Python script to generate the raw LaTeX code with appropriate template layout (including the image include path).
-5. Backend writes the `.tex` file to the temporary directory.
-6. Backend spawns a child process to run `pdflatex` or `tectonic` over the temporary `.tex` file to build `resume.pdf`.
-7. Backend returns the compiled `resume.pdf` file as a download stream.
-8. Frontend triggers browser download.
-9. Backend removes all temporary files (the `.tex`, `.pdf`, `.aux`, `.log`, and decoded image file) from the system.
+1. The frontend layout features a split-pane interface (forms on the left, `PreviewPanel` on the right).
+2. The user edits the form. Changes are sent to the backend for preview generation, either automatically (debounced after 2 seconds of inactivity) or manually when the user clicks a "Refresh Preview" button in the `PreviewPanel`.
+3. Frontend POSTs the current CV JSON (including the base64 profile photo data) to `POST /api/cv/export`.
+4. Backend parses the request, decodes the base64 image (if present) to a temporary folder, runs the Python script to generate LaTeX, compiles the `.tex` to `resume.pdf` via a LaTeX compiler (`pdflatex` or `tectonic`), and returns the compiled PDF file as a binary stream.
+5. Frontend receives the stream as a Blob, generates a temporary browser Object URL via `URL.createObjectURL(pdfBlob)`, and updates the `src` of the iframe in `PreviewPanel` to display the PDF.
+6. The `PreviewPanel` contains a "Download PDF" button. Clicking this button triggers a browser download using the already-fetched PDF Blob (e.g., via `<a download="resume.pdf">` or a save-file utility), avoiding a redundant compile request to the server.
+7. Backend cleans up all temporary compilation files (`.tex`, `.pdf`, `.aux`, `.log`, and the decoded profile photo) immediately after streaming the PDF response.
+
+### 1.6 Landing Page Specifications
+
+The Landing Page (`LandingPage.jsx`) serves as the welcoming entry point of the web application, presenting a modern, high-converting product showcase that routes users directly into the CV Builder. It must match the layout and design patterns shown in `landing_pc.png` and `landing_mobile.png`.
+
+#### 1.6.1 Navigation Header
+*   **Logo/Brand Name**: Displays "ResumeForge" alongside a document-themed icon.
+*   **Navigation Links (PC)**: Centered text links for "Features", "How it Works", and "Examples".
+*   **Action Button (PC)**: "Get Started" purple pill-shaped button with a right arrow icon, routing users to `/builder`.
+*   **Mobile View**: The navigation links and CTA are replaced by a responsive hamburger menu icon on the right side.
+
+#### 1.6.2 Hero Section
+*   **Header Announcement Badge**: A rounded pill badge with light purple/blue background stating `⚡ FREE & INSTANT — NO ACCOUNT NEEDED` (desktop) or `⚡ FREE & INSTANT — NO SIGN-UP` (mobile).
+*   **Main Title (H1)**: "Build Your Resume in Minutes", featuring a distinct gradient or accent color highlight on the words "in Minutes".
+*   **Subheadline**: "Fill in your details, we handle the formatting. Export a polished PDF instantly."
+*   **Primary Call-to-Action (CTA)**: A prominent purple pill button "Create My Resume" accompanied by a document icon, routing directly to the CV Builder (`/builder`).
+*   **Secondary Call-to-Action**: "See an Example" outlined/text button featuring a play/arrow icon.
+*   **Trust Badges**: A list of key product features decorated with green checkmark icons:
+    *   No sign-up required (Desktop) / No sign-up (Mobile)
+    *   100% free
+    *   Instant PDF export
+    *   ATS-friendly format
+    *   *Note: These badges wrap cleanly or stack vertically on mobile layouts.*
+
+#### 1.6.3 "How It Works" Section
+*   **Section Subtitle**: "HOW IT WORKS" in small caps/uppercase using a purple accent color.
+*   **Section Title**: "Three simple steps to your perfect resume".
+*   **Step Cards**: Three card elements presenting the workflow:
+    1.  **01 Fill Your Details**: Displays a keyboard icon on a light purple/blue circular/rounded background, accompanied by the text: "Enter your name, experience, education, and skills into our clean, guided form. Takes just a few minutes."
+    2.  **02 Review Layout**: Displays a preview eye icon on a light purple/blue circular/rounded background, accompanied by the text: "See a live preview of your formatted resume as you type. Choose from clean, professional templates that impress hiring managers."
+    3.  **03 Export PDF**: Displays a document download/PDF icon on a light purple/blue circular/rounded background, accompanied by the text: "Download your finished resume as a pixel-perfect PDF instantly. Ready to send to employers or upload to any job platform."
+*   **Desktop Layout**: Arranged in a horizontal 3-column layout. Step cards are connected visually by horizontal dashed lines.
+*   **Mobile Layout**: Stacked vertically in a single-column layout. Each step card features the step number (`01`, `02`, `03`) highlighted in a purple circle on the left, with the respective icon shown on the right side of the card header.
+*   **Mobile Sticky Bottom CTA**: A sticky/fixed bottom bar displaying a primary button "Start for Free" with a document icon to allow quick access to `/builder` at any point of scrolling.
+
+> [!NOTE]
+> **Branding Alignment**: While the landing page mockups use the name "ResumeForge", the form builder mockups use "CVcraft". The logo, brand name, and favicon should be consistently aligned across both the landing page and the builder page.
 
 ---
 

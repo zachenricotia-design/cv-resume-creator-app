@@ -133,14 +133,35 @@
 
 ### App Layout
 - [ ] Create `src/pages/BuilderPage.jsx` as main layout
+  - [ ] Implement split-pane workspace: input form on the left, `PreviewPanel` on the right (collapsible/tabbed layout on mobile screens)
 - [ ] Create `src/components/layout/Sidebar.jsx`
   - [ ] List all 9 possible sections
   - [ ] Show "Add" button for sections not yet added
   - [ ] Show "Added ✓" state for active sections
 - [ ] Create `src/components/layout/Header.jsx`
   - [ ] App logo/name
-  - [ ] "Generate PDF" CTA button
-- [ ] Set up routing in `App.jsx` (react-router-dom)
+  - [ ] Draft saving / connection state status indicator
+- [ ] Create `src/components/layout/PreviewPanel.jsx`
+  - [ ] Standard iframe or custom PDF viewer to render the PDF Object URL in-browser
+  - [ ] Compilation state overlay (loading spinner/skeleton)
+  - [ ] Manual "Refresh Preview" action button
+  - [ ] "Download PDF" CTA button that downloads the currently compiled PDF blob directly from browser memory
+- [ ] Set up routing in `App.jsx` (react-router-dom) with paths:
+  - `/` -> `LandingPage.jsx`
+  - `/builder` -> `BuilderPage.jsx`
+
+### Landing Page
+- [ ] Create `src/pages/LandingPage.jsx` based on mockups
+  - [ ] Implement Navigation Header matching `landing_pc.png` and `landing_mobile.png` (with "ResumeForge" branding, text links on desktop, and hamburger menu trigger on mobile)
+  - [ ] Implement Hero section with announcement badge, typography headers with gradient accent, CTA buttons ("Create My Resume" & "See an Example"), and trust checklist with green checkmarks
+  - [ ] Implement "How it Works" section with 3-step cards:
+    - Step 01: "Fill Your Details" (keyboard icon)
+    - Step 02: "Review Layout" (eye icon)
+    - Step 03: "Export PDF" (document download icon)
+    - Desktop: horizontal 3-column layout with connecting dashed lines
+    - Mobile: vertical stacked layout with step number circles on the left and icons on the right
+  - [ ] Implement mobile-only sticky bottom CTA button ("Start for Free")
+  - [ ] Ensure all CTA buttons correctly route the user to the builder page (`/builder`)
 
 ---
 
@@ -191,19 +212,20 @@ For each: Experience, Education, Awards, Projects, Certifications, Research Publ
 
 ---
 
-## Phase 5 — Frontend: Export Flow
+## Phase 5 — Frontend: Preview & PDF Rendering
 
 - [ ] Create `src/services/api.js`
   - [ ] Axios instance with `baseURL` from env
-  - [ ] `exportCV(cvData)` — POST to `/api/cv/export`, receive blob
+  - [ ] `exportCV(cvData)` — POST to `/api/cv/export`, receive raw PDF Blob
   - [ ] `saveCV(cvData)` — POST to `/api/cv`
   - [ ] `loadCV(id)` — GET `/api/cv/:id`
-- [ ] Create `src/components/modals/ExportModal.jsx`
-  - [ ] Show on "Generate PDF" click
-  - [ ] Display loading spinner during API call
-  - [ ] On success: trigger browser PDF file download
-  - [ ] On error: show error message with retry option
-- [ ] Wire "Generate PDF" button in `Header.jsx` to open modal and trigger export
+- [ ] Implement Preview compilation logic in `BuilderPage.jsx`:
+  - [ ] Debounce user inputs (e.g. 2s) to trigger auto-compile requests to `/api/cv/export`
+  - [ ] Convert PDF Blob response to local Object URL via `URL.createObjectURL(pdfBlob)`
+  - [ ] Revoke previous Object URLs to avoid memory leaks
+  - [ ] Pass the Object URL to `PreviewPanel.jsx` to render inside the iframe
+  - [ ] Catch compiler error messages and display them in the preview area
+- [ ] Connect "Download PDF" button in `PreviewPanel.jsx` to trigger file saving from the cached local PDF Blob directly (avoiding another compile request)
 
 ---
 
