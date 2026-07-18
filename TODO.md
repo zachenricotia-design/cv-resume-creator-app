@@ -85,7 +85,6 @@
   - [ ] Read CV JSON from stdin (`import sys, json; data = json.load(sys.stdin)`)
   - [ ] Install Jinja2: `pip install jinja2`
   - [ ] Create `templates/resume.tex.j2` — base LaTeX template
-  - [ ] Support conditional logic to embed a profile photo if `profilePhotoPath` is supplied (using `\usepackage{graphicx}` and `\includegraphics`)
   - [ ] Implement rendering for each section type (Personal, Experience, Education, etc.)
   - [ ] Handle optional sections (skip if not present in JSON)
   - [ ] Output rendered `.tex` markup to stdout
@@ -94,7 +93,6 @@
 ### LaTeX/PDF Service (Node.js)
 - [ ] Create `src/services/latex.service.js`
   - [ ] Generate unique run ID (`uuid`) and create a temporary subdirectory under `TEMP_DIR`
-  - [ ] Check for `profilePhoto` (base64 string) in the payload; decode and write to temporary file if present
   - [ ] Spawn Python script to generate `.tex` string and write to a `resume.tex` file in the temp subdirectory
   - [ ] Spawn PDF compiler child process (e.g., `pdflatex -interaction=nonstopmode resume.tex`) within the temp subdirectory
   - [ ] Capture compiler output and handle non-zero exit codes (log compilation errors)
@@ -124,7 +122,7 @@
 - [ ] Create `src/hooks/useCVStore.js`
 - [ ] Define store shape:
   ```js
-  { personal: { name, title, profilePhoto, location, ... }, sections: [], addSection, removeSection,
+  { personal: { name, title, location, ... }, sections: [], addSection, removeSection,
     updatePersonal, addEntry, updateEntry, removeEntry, reorderSections }
   ```
 - [ ] Implement all actions
@@ -176,13 +174,8 @@
 
 ### Personal Details Section
 - [ ] `PersonalDetails.jsx`
-  - [ ] Fields: name, title, profilePhoto, location, email, phone, linkedin, github, website
+  - [ ] Fields: name, title, location, email, phone, linkedin, github, website
   - [ ] Always rendered (cannot be removed)
-  - [ ] File upload selector for `profilePhoto` with:
-    - [ ] Type validation (JPEG/PNG)
-    - [ ] Size limitation (e.g. max 2MB)
-    - [ ] Conversion to base64 data URL
-    - [ ] Thumbnail preview and a "Remove Photo" option
   - [ ] Inline validation (email format, URL format)
 
 ### Repeatable Entry Sections

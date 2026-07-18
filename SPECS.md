@@ -71,7 +71,6 @@ src/
 |---------------|--------|-------------------------------|
 | Full Name     | text   | Required                      |
 | Job Title     | text   | e.g. "Software Engineer"      |
-| Profile Photo | string | Base64 encoded image (PNG/JPEG) data URL |
 | Location      | text   | City, Country                 |
 | Email (Gmail) | email  | Validated format              |
 | Phone Number  | tel    | With country code             |
@@ -185,11 +184,11 @@ src/
 
 1. The frontend layout features a split-pane interface (forms on the left, `PreviewPanel` on the right).
 2. The user edits the form. Changes are sent to the backend for preview generation, either automatically (debounced after 2 seconds of inactivity) or manually when the user clicks a "Refresh Preview" button in the `PreviewPanel`.
-3. Frontend POSTs the current CV JSON (including the base64 profile photo data) to `POST /api/cv/export`.
-4. Backend parses the request, decodes the base64 image (if present) to a temporary folder, runs the Python script to generate LaTeX, compiles the `.tex` to `resume.pdf` via a LaTeX compiler (`pdflatex` or `tectonic`), and returns the compiled PDF file as a binary stream.
+3. Frontend POSTs the current CV JSON to `POST /api/cv/export`.
+4. Backend parses the request, runs the Python script to generate LaTeX, compiles the `.tex` to `resume.pdf` via a LaTeX compiler (`pdflatex` or `tectonic`), and returns the compiled PDF file as a binary stream.
 5. Frontend receives the stream as a Blob, generates a temporary browser Object URL via `URL.createObjectURL(pdfBlob)`, and updates the `src` of the iframe in `PreviewPanel` to display the PDF.
 6. The `PreviewPanel` contains a "Download PDF" button. Clicking this button triggers a browser download using the already-fetched PDF Blob (e.g., via `<a download="resume.pdf">` or a save-file utility), avoiding a redundant compile request to the server.
-7. Backend cleans up all temporary compilation files (`.tex`, `.pdf`, `.aux`, `.log`, and the decoded profile photo) immediately after streaming the PDF response.
+7. Backend cleans up all temporary compilation files (`.tex`, `.pdf`, `.aux`, `.log`) immediately after streaming the PDF response.
 
 ### 1.6 Landing Page Specifications
 
@@ -348,7 +347,6 @@ CREATE INDEX idx_cvs_user_id ON cvs(user_id);
 - Accepts CV JSON via **stdin** or as a **CLI argument** (`--json`).
 - Outputs a valid `.tex` markup to **stdout**.
 - Uses Jinja2 templating for `.tex` template rendering.
-- Handles embedding the profile photo if `profilePhotoPath` (the path to the temporary image file on the backend host) is defined in the JSON metadata.
 - Node.js calls this script and compiles the PDF using a sub-process wrapper.
 
 ```js
@@ -365,24 +363,11 @@ function generatePdf(cvData) {
     
     // 1. Setup workspace directory
     fs.mkdirSync(tempDir, { recursive: true });
-    
-    let imageFilename = null;
-    if (cvData.personal?.profilePhoto) {
-      // Decode profilePhoto data URL if present
-      const matches = cvData.personal.profilePhoto.match(/^data:image\/([a-zA-Z+]+);base64,(.+)$/);
-      if (matches && matches.length === 3) {
-        const ext = matches[1];
-        const base64Data = matches[2];
-        imageFilename = `profile.${ext}`;
-        fs.writeFileSync(path.join(tempDir, imageFilename), Buffer.from(base64Data, 'base64'));
-      }
-    }
-    
+
     const renderData = {
       ...cvData,
       personal: {
-        ...cvData.personal,
-        profilePhotoPath: imageFilename // File name of the image relative to compilation folder
+        ...cvData.personal
       }
     };
 
