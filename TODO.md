@@ -82,7 +82,7 @@
 - [ ] Apply validation middleware to all POST/PUT routes
 
 ### Rate Limiting & Bloat Prevention
-- [ ] Apply body size limit to Express parser: `app.use(express.json({ limit: '100kb' }))`
+- [ ] Apply body size limit to Express parser: `app.use(express.json({ limit: '125kb' }))`
 - [ ] Configure `express-rate-limit` for `POST /api/cv` (max 10 requests per hour per IP)
 - [ ] Configure general rate limiting for preview generation and export endpoints
 
