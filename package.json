@@ -1,0 +1,17 @@
+{
+  "name": "cv-resume-creator-app",
+  "version": "0.0.1",
+  "description": "Full-stack web application for building professional CVs/resumes",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm --workspace=client install && npm --workspace=server install",
+    "dev": "npm run dev --workspace=client & npm run dev --workspace=server",
+    "build": "npm run build --workspace=client",
+    "test": "npm test --workspace=server",
+    "lint": "npm run lint --workspace=client"
+  }
+}

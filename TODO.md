@@ -7,43 +7,43 @@
 ## Phase 0 — Project Setup
 
 ### Repository & Tooling
-- [ ] Initialize monorepo structure:
+- [x] Initialize monorepo structure:
   ```
   /
   ├── client/   (React + Vite)
   └── server/   (Node.js + Express)
   ```
-- [ ] Add root `package.json` with workspaces (or use separate repos)
-- [ ] Add `.gitignore` for `node_modules`, `.env`, `tmp/`, `dist/`
-- [ ] Add `README.md` with setup instructions
+- [x] Add root `package.json` with workspaces (or use separate repos)
+- [x] Add `.gitignore` for `node_modules`, `.env`, `tmp/`, `dist/`
+- [x] Add `README.md` with setup instructions
 
 ### Backend Bootstrap
-- [ ] `cd server && npm init -y`
-- [ ] Install dependencies: `express`, `pg`, `dotenv`, `cors`, `helmet`, `joi`, `uuid`
-- [ ] Install dev dependencies: `nodemon`, `jest`, `supertest`
-- [ ] Create `.env` from `.env.example`
-- [ ] Set up `src/app.js` with Express instance and middleware (cors, helmet, json parser)
-- [ ] Set up `src/index.js` entry point with port binding
-- [ ] Confirm server starts: `npm run dev`
+- [x] `cd server && npm init -y`
+- [x] Install dependencies: `express`, `pg`, `dotenv`, `cors`, `helmet`, `joi`, `uuid`
+- [x] Install dev dependencies: `nodemon`, `jest`, `supertest`
+- [x] Create `.env` from `.env.example`
+- [x] Set up `src/app.js` with Express instance and middleware (cors, helmet, json parser)
+- [x] Set up `src/index.js` entry point with port binding
+- [x] Confirm server starts: `npm run dev`
 
 ### Frontend Bootstrap
-- [ ] `cd client && npm create vite@latest . -- --template react`
-- [ ] Install dependencies: `axios`, `zustand`, `react-router-dom`, `@dnd-kit/core`
-- [ ] Install TailwindCSS and configure `tailwind.config.js`
-- [ ] Remove Vite boilerplate (App.css, logo, etc.)
-- [ ] Confirm app renders: `npm run dev`
+- [x] `cd client && npm create vite@latest . -- --template react`
+- [x] Install dependencies: `axios`, `zustand`, `react-router-dom`, `@dnd-kit/core`
+- [x] Install TailwindCSS and configure `tailwind.config.js`
+- [x] Remove Vite boilerplate (App.css, logo, etc.)
+- [x] Confirm app renders: `npm run dev`
 
 ### Database Setup
 - [ ] Install and start PostgreSQL locally (or provision via Docker)
 - [ ] Create database: `createdb cvapp`
-- [ ] Write `db/migrations/001_create_users.sql`
-- [ ] Write `db/migrations/002_create_cvs.sql`
-  - [ ] Add `access_token_hash` field to `cvs` table (nullable TEXT)
-  - [ ] Add index on `user_id` for fast lookups
-  - [ ] Add partial index `idx_cvs_anonymous_updated_at` on `updated_at` where `user_id IS NULL`
+- [x] Write `db/migrations/001_create_users.sql`
+- [x] Write `db/migrations/002_create_cvs.sql`
+  - [x] Add `access_token_hash` field to `cvs` table (nullable TEXT)
+  - [x] Add index on `user_id` for fast lookups
+  - [x] Add partial index `idx_cvs_anonymous_updated_at` on `updated_at` where `user_id IS NULL`
 - [ ] Run migrations manually or via a migration script
 
-- [ ] Create `src/db/pool.js` with `pg.Pool` using `DATABASE_URL`
+- [x] Create `src/db/pool.js` with `pg.Pool` using `DATABASE_URL`
 - [ ] Test DB connection from Node.js
 
 ---
