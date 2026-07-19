@@ -38,7 +38,11 @@
 - [ ] Create database: `createdb cvapp`
 - [ ] Write `db/migrations/001_create_users.sql`
 - [ ] Write `db/migrations/002_create_cvs.sql`
+  - [ ] Add `access_token_hash` field to `cvs` table (nullable TEXT)
+  - [ ] Add index on `user_id` for fast lookups
+  - [ ] Add partial index `idx_cvs_anonymous_updated_at` on `updated_at` where `user_id IS NULL`
 - [ ] Run migrations manually or via a migration script
+
 - [ ] Create `src/db/pool.js` with `pg.Pool` using `DATABASE_URL`
 - [ ] Test DB connection from Node.js
 
@@ -50,22 +54,43 @@
 - [ ] Create `src/routes/cv.routes.js` and mount at `/api/cv`
 - [ ] **POST `/api/cv`** — Save new CV draft
   - [ ] Validate request body (Joi schema: personal + sections)
-  - [ ] Insert into `cvs` table (personal_data, sections as JSONB)
-  - [ ] Return `{ id, createdAt }`
+  - [ ] Check if authenticated. If anonymous:
+    - [ ] Generate secure random hex string as `access_token`
+    - [ ] Hash token using SHA-256 to create `access_token_hash`
+    - [ ] Insert into `cvs` table (`personal_data`, `sections`, `access_token_hash`)
+    - [ ] Return `{ id, accessToken, createdAt }`
+  - [ ] If authenticated: Insert with `user_id` and return `{ id, createdAt }`
 - [ ] **GET `/api/cv/:id`** — Fetch CV by ID
   - [ ] Validate UUID format
+  - [ ] Retrieve row and check permission:
+    - [ ] If anonymous draft (`user_id` is NULL): hash `X-CV-Access-Token` request header and compare with database `access_token_hash`. Return 401/403 if missing or mismatch.
+    - [ ] If authenticated draft: verify token matches owner (`user_id`).
   - [ ] Return full CV JSON or 404
 - [ ] **PUT `/api/cv/:id`** — Update CV draft
   - [ ] Validate body and UUID
+  - [ ] Verify permission (hash `X-CV-Access-Token` for anonymous, or check JWT user ID)
   - [ ] Update row, set `updated_at = NOW()`
   - [ ] Return updated CV
 - [ ] **DELETE `/api/cv/:id`** — Delete CV
+  - [ ] Verify permission (hash `X-CV-Access-Token` for anonymous, or check JWT user ID)
   - [ ] Return 204 on success
+
 
 ### Validation Middleware
 - [ ] Create `src/middleware/validate.js` using Joi
 - [ ] Define Joi schemas for personal details and each section type
 - [ ] Apply validation middleware to all POST/PUT routes
+
+### Rate Limiting & Bloat Prevention
+- [ ] Apply body size limit to Express parser: `app.use(express.json({ limit: '100kb' }))`
+- [ ] Configure `express-rate-limit` for `POST /api/cv` (max 10 requests per hour per IP)
+- [ ] Configure general rate limiting for preview generation and export endpoints
+
+### Inactivity Cleanup Service
+- [ ] Create database cleanup cron worker `src/utils/cleanupWorker.js` (using `node-cron` or simple daily timer)
+- [ ] Implement pruning query: `DELETE FROM cvs WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '3 days'`
+- [ ] Hook cleanup script to server start up process and run once every 24 hours
+
 
 ### Error Handling
 - [ ] Create `src/middleware/errorHandler.js`
@@ -126,8 +151,12 @@
     updatePersonal, addEntry, updateEntry, removeEntry, reorderSections }
   ```
 - [ ] Implement all actions
-- [ ] Add `localStorage` persistence middleware (Zustand persist)
+- [ ] Add `localStorage` persistence middleware (Zustand persist) to store draft state locally
 - [ ] Add auto-save hook `useAutoSave.js` (debounced sync to backend)
+  - [ ] Load `cv_id` and `cv_access_token` from `localStorage` on init, if present fetch draft via `GET /api/cv/:id`
+  - [ ] On first save: call `POST /api/cv` (anonymous) and store returned `id` and `accessToken` in `localStorage`
+  - [ ] On subsequent updates: call `PUT /api/cv/:id` with `X-CV-Access-Token` header set to the stored access token
+
 
 ### App Layout
 - [ ] Create `src/pages/BuilderPage.jsx` as main layout
@@ -209,9 +238,11 @@ For each: Experience, Education, Awards, Projects, Certifications, Research Publ
 
 - [ ] Create `src/services/api.js`
   - [ ] Axios instance with `baseURL` from env
+  - [ ] Set up interceptors to attach `X-CV-Access-Token` header if available in `localStorage`
   - [ ] `exportCV(cvData)` — POST to `/api/cv/export`, receive raw PDF Blob
   - [ ] `saveCV(cvData)` — POST to `/api/cv`
   - [ ] `loadCV(id)` — GET `/api/cv/:id`
+
 - [ ] Implement Preview compilation logic in `BuilderPage.jsx`:
   - [ ] Debounce user inputs (e.g. 2s) to trigger auto-compile requests to `/api/cv/export`
   - [ ] Convert PDF Blob response to local Object URL via `URL.createObjectURL(pdfBlob)`

@@ -178,7 +178,13 @@ src/
 ```
 
 - Auto-save to `localStorage` on every change (debounced 1s).
-- Optional: sync to backend DB (requires auth).
+- **Anonymous Progress Saving (No Sign-in):**
+  - On the first auto-save, if the user is anonymous (not signed in) and no `cv_id` exists in `localStorage`, the frontend POSTs to `/api/cv` (anonymous) to create a draft.
+  - The backend returns a generated `cv_id` and a cryptographically secure random `access_token` (e.g. hex encoded).
+  - The client stores both `cv_id` and `access_token` in `localStorage`.
+  - Subsequent updates are sent via `PUT /api/cv/:id` with the token in the `X-CV-Access-Token` header.
+  - If the user leaves and returns, the frontend retrieves the `cv_id` and `access_token` from `localStorage` and loads the draft via `GET /api/cv/:id` with the token header.
+- **Registered Sync:** Sync to backend DB associated with the user account (requires JWT authorization header).
 
 ### 1.5 PDF Preview & Export Flow
 
@@ -266,10 +272,10 @@ server/
 
 | Method | Endpoint              | Description                        |
 |--------|-----------------------|------------------------------------|
-| POST   | `/api/cv`             | Save a new CV draft                |
-| GET    | `/api/cv/:id`         | Retrieve a saved CV by ID          |
-| PUT    | `/api/cv/:id`         | Update a CV draft                  |
-| DELETE | `/api/cv/:id`         | Delete a CV                        |
+| POST   | `/api/cv`             | Save a new CV draft. Generates a secure `access_token` if anonymous (no JWT auth header). |
+| GET    | `/api/cv/:id`         | Retrieve a saved CV by ID. Requires `X-CV-Access-Token` for anonymous drafts. |
+| PUT    | `/api/cv/:id`         | Update a CV draft. Requires JWT auth or valid `X-CV-Access-Token`. |
+| DELETE | `/api/cv/:id`         | Delete a CV. Requires JWT auth or valid `X-CV-Access-Token`. |
 | POST   | `/api/cv/export`      | Generate and download compiled `.pdf` file |
 | POST   | `/api/cv/:id/export`  | Export a saved CV by ID as a `.pdf` file   |
 
@@ -443,6 +449,16 @@ TEMP_DIR=./tmp
 - Rate-limit the `/api/cv/export` endpoint (expensive operation).
 - Clean up temporary `.tex` files after serving the download.
 - CORS configured to allow only the frontend origin.
+- **Anonymous Progress Security:**
+  - Token hashing: The backend stores the cryptographic SHA-256 hash of the anonymous access tokens (`access_token_hash`) instead of the plaintext tokens. This prevents exposure of access tokens in the event of a database leak, ensuring an attacker cannot use the database to access/modify live CV sessions.
+  - Verification: When reading/updating anonymous drafts, the client must supply the plaintext token in the `X-CV-Access-Token` header. The server hashes the header input and compares it against `access_token_hash` in the database.
+- **Database Bloat & Bot Prevention:**
+  - Rate limiting: Apply strict rate limiting on `POST /api/cv` to prevent automated scripts from creating thousands of empty records (e.g., limit to 10 drafts created per IP address per hour).
+  - Size validation: Limit request payload sizes to a maximum of 125kB for all CV schema submissions to prevent massive payload spam from inflating database storage.
+  - Inactivity Cleanup: A background cron worker must run daily to delete any anonymous CV drafts (`user_id IS NULL`) that have not been updated in the last 3 days:
+    ```sql
+    DELETE FROM cvs WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '3 days';
+    ```
 
 ---
 
