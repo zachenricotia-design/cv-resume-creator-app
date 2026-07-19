@@ -51,7 +51,8 @@ src/
 │   │   ├── DateRangePicker.jsx
 │   │   └── SectionCard.jsx       # Wrapper with add/remove/reorder controls
 │   └── modals/
-│       └── ExportModal.jsx       # Download options
+│       ├── ExportModal.jsx       # Download options
+│       └── AuthModal.jsx         # Sign in/up modal
 ├── pages/
 │   ├── BuilderPage.jsx           # Main builder UI
 │   └── LandingPage.jsx           # Landing page with product overview & CTAs
@@ -161,6 +162,20 @@ src/
   - Drag-to-reorder handle (optional v2)
 - Repeatable sections (Experience, Education, etc.) have an **"Add Entry"** button that appends a new blank entry form.
 
+### 1.3.1 Header Actions & Sign-In Flow
+
+- The **Header** (`Header.jsx`) in the Builder page contains:
+  - App Logo / Brand Name.
+  - Draft status indicator ("Saved", "Saving...", "Syncing to cloud...", "Offline").
+  - A prominent **"Sign In"** (or "Save Progress" / "Sign In to Save Permanently") button when the user is anonymous.
+  - A user profile display and **"Sign Out"** button when the user is authenticated.
+- **Authentication Modal (`AuthModal.jsx`):**
+  - Triggered by clicking the "Sign In" button in the header.
+  - Features quick toggle tabs for **Sign In** and **Create Account**.
+  - On submission, calls `/api/auth/login` or `/api/auth/register`, retrieving a JWT token.
+  - If a local anonymous draft exists in `localStorage`, the frontend immediately calls the claiming API (`POST /api/cv/:id/claim`) to link the draft to the new user account and prevent it from being deleted after 3 days.
+
+
 ### 1.4 State Management
 
 - Use **Zustand** (recommended) or React Context + useReducer.
@@ -184,7 +199,11 @@ src/
   - The client stores both `cv_id` and `access_token` in `localStorage`.
   - Subsequent updates are sent via `PUT /api/cv/:id` with the token in the `X-CV-Access-Token` header.
   - If the user leaves and returns, the frontend retrieves the `cv_id` and `access_token` from `localStorage` and loads the draft via `GET /api/cv/:id` with the token header.
-- **Registered Sync:** Sync to backend DB associated with the user account (requires JWT authorization header).
+- **Registered Sync & Claiming Drafts:**
+  - Registered users sync their drafts to the backend DB associated with their user account (requires JWT authorization header).
+  - **Draft Claiming Flow:** When an anonymous user signs in or registers, the client claims the current anonymous draft by calling `POST /api/cv/:id/claim` with the JWT in `Authorization` header and the plaintext token in `X-CV-Access-Token` header.
+  - On success, the draft's `user_id` is updated in the database and its `access_token_hash` is cleared (`NULL`). The client removes `cv_access_token` from `localStorage`. Since `user_id` is now set, the draft is permanently saved and is exempt from the 3-day inactivity deletion.
+
 
 ### 1.5 PDF Preview & Export Flow
 
@@ -270,14 +289,25 @@ server/
 
 #### CV Resource
 
+#### User Auth Resource
+
+| Method | Endpoint              | Description                        |
+|--------|-----------------------|------------------------------------|
+| POST   | `/api/auth/register`  | Register a new user account.       |
+| POST   | `/api/auth/login`     | Authenticate user and return JWT.  |
+
+#### CV Resource
+
 | Method | Endpoint              | Description                        |
 |--------|-----------------------|------------------------------------|
 | POST   | `/api/cv`             | Save a new CV draft. Generates a secure `access_token` if anonymous (no JWT auth header). |
 | GET    | `/api/cv/:id`         | Retrieve a saved CV by ID. Requires `X-CV-Access-Token` for anonymous drafts. |
 | PUT    | `/api/cv/:id`         | Update a CV draft. Requires JWT auth or valid `X-CV-Access-Token`. |
 | DELETE | `/api/cv/:id`         | Delete a CV. Requires JWT auth or valid `X-CV-Access-Token`. |
+| POST   | `/api/cv/:id/claim`   | Link an anonymous CV to an authenticated user (claims ownership). Requires JWT auth and `X-CV-Access-Token`. |
 | POST   | `/api/cv/export`      | Generate and download compiled `.pdf` file |
-| POST   | `/api/cv/:id/export`  | Export a saved CV by ID as a `.pdf` file   |
+| POST   | `/api/cv/:id/export`  | Export a saved CV by ID as a `.pdf` file. Requires validation if anonymous. |
+
 
 #### Request Body — Save/Update CV
 
@@ -456,6 +486,8 @@ TEMP_DIR=./tmp
 - **Anonymous Progress Security:**
   - Token hashing: The backend stores the cryptographic SHA-256 hash of the anonymous access tokens (`access_token_hash`) instead of the plaintext tokens. This prevents exposure of access tokens in the event of a database leak, ensuring an attacker cannot use the database to access/modify live CV sessions.
   - Verification: When reading/updating anonymous drafts, the client must supply the plaintext token in the `X-CV-Access-Token` header. The server hashes the header input and compares it against `access_token_hash` in the database.
+  - Claim Validation: The claiming endpoint `/api/cv/:id/claim` requires dual verification. The request must present a valid JWT token (proving user identity) AND the correct plaintext `access_token` in the `X-CV-Access-Token` header (proving current ownership of the anonymous draft). This prevents malicious users from claiming other users' drafts.
+
 - **Database Bloat & Bot Prevention:**
   - Rate limiting: Apply strict rate limiting on `POST /api/cv` to prevent automated scripts from creating thousands of empty records (e.g., limit to 10 drafts created per IP address per hour).
   - Size validation: Limit request payload sizes to a maximum of 125kB for all CV schema submissions to prevent massive payload spam from inflating database storage.

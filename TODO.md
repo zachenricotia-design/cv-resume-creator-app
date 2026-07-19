@@ -75,6 +75,19 @@
   - [ ] Verify permission (hash `X-CV-Access-Token` for anonymous, or check JWT user ID)
   - [ ] Return 204 on success
 
+### User Authentication & Claiming Endpoints
+- [ ] Create `src/routes/auth.routes.js` and mount at `/api/auth`
+  - [ ] **POST `/api/auth/register`** — Register new user (validate, bcrypt hash, insert, sign and return JWT)
+  - [ ] **POST `/api/auth/login`** — Authenticate user (find user, bcrypt check, sign and return JWT)
+- [ ] **POST `/api/cv/:id/claim`** — Claim ownership of an anonymous CV draft
+  - [ ] Validate UUID format of the draft ID
+  - [ ] Retrieve row and verify that `user_id` is NULL
+  - [ ] Validate `X-CV-Access-Token` header by hashing it and matching `access_token_hash`
+  - [ ] Retrieve user ID from validated JWT token
+  - [ ] Update `cvs` set `user_id = <logged_in_user_id>` and `access_token_hash = NULL`
+  - [ ] Return `{ success: true }`
+
+
 
 ### Validation Middleware
 - [ ] Create `src/middleware/validate.js` using Joi
@@ -152,10 +165,13 @@
   ```
 - [ ] Implement all actions
 - [ ] Add `localStorage` persistence middleware (Zustand persist) to store draft state locally
+- [ ] Add authentication state fields to store: `{ user: null, token: null, setUser, logout }`
 - [ ] Add auto-save hook `useAutoSave.js` (debounced sync to backend)
   - [ ] Load `cv_id` and `cv_access_token` from `localStorage` on init, if present fetch draft via `GET /api/cv/:id`
   - [ ] On first save: call `POST /api/cv` (anonymous) and store returned `id` and `accessToken` in `localStorage`
   - [ ] On subsequent updates: call `PUT /api/cv/:id` with `X-CV-Access-Token` header set to the stored access token
+  - [ ] Handle claim sync sequence when a user signs in while having a local anonymous draft
+
 
 
 ### App Layout
@@ -168,6 +184,9 @@
 - [ ] Create `src/components/layout/Header.jsx`
   - [ ] App logo/name
   - [ ] Draft saving / connection state status indicator
+  - [ ] A prominent "Sign In" button that opens `AuthModal` when anonymous
+  - [ ] User profile metadata and a "Sign Out" button when logged in
+
 - [ ] Create `src/components/layout/PreviewPanel.jsx`
   - [ ] Standard iframe or custom PDF viewer to render the PDF Object URL in-browser
   - [ ] Compilation state overlay (loading spinner/skeleton)
@@ -176,6 +195,15 @@
 - [ ] Set up routing in `App.jsx` (react-router-dom) with paths:
   - `/` -> `LandingPage.jsx`
   - `/builder` -> `BuilderPage.jsx`
+
+### Modals & Dialogs
+- [ ] Create `src/components/modals/AuthModal.jsx`
+  - [ ] UI layout with toggleable Login and Register tabs
+  - [ ] Inputs: Email, Password, Confirm Password (only for Register)
+  - [ ] Implement error/validation UI messages
+  - [ ] Hook submission to authentication service
+  - [ ] Trigger claim endpoint flow `POST /api/cv/:id/claim` on successful login/signup if an anonymous draft exists locally
+
 
 ### Landing Page
 - [ ] Create `src/pages/LandingPage.jsx` based on mockups
@@ -238,10 +266,13 @@ For each: Experience, Education, Awards, Projects, Certifications, Research Publ
 
 - [ ] Create `src/services/api.js`
   - [ ] Axios instance with `baseURL` from env
-  - [ ] Set up interceptors to attach `X-CV-Access-Token` header if available in `localStorage`
+  - [ ] Set up interceptors to attach `X-CV-Access-Token` header (for anonymous) or `Authorization: Bearer <token>` header (for logged-in user)
   - [ ] `exportCV(cvData)` — POST to `/api/cv/export`, receive raw PDF Blob
   - [ ] `saveCV(cvData)` — POST to `/api/cv`
   - [ ] `loadCV(id)` — GET `/api/cv/:id`
+  - [ ] `claimCV(id)` — POST `/api/cv/:id/claim`
+  - [ ] `login(email, password)` and `register(email, password)` methods
+
 
 - [ ] Implement Preview compilation logic in `BuilderPage.jsx`:
   - [ ] Debounce user inputs (e.g. 2s) to trigger auto-compile requests to `/api/cv/export`
