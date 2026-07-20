@@ -262,23 +262,23 @@ The Landing Page (`LandingPage.jsx`) serves as the welcoming entry point of the 
 server/
 ├── src/
 │   ├── routes/
-│   │   ├── cv.routes.jsx         # CV CRUD & export
-│   │   └── user.routes.jsx       # Auth (optional)
+│   │   ├── cv.routes.js         # CV CRUD & export
+│   │   └── user.routes.js       # Auth (optional)
 │   ├── controllers/
-│   │   ├── cv.controller.jsx
-│   │   └── export.controller.jsx
+│   │   ├── cv.controller.js
+│   │   └── export.controller.js
 │   ├── services/
-│   │   ├── cv.service.jsx        # Business logic
-│   │   └── latex.service.jsx     # Calls Python script
+│   │   ├── cv.service.js        # Business logic
+│   │   └── latex.service.js     # Calls Python script
 │   ├── middleware/
-│   │   ├── validate.jsx          # Joi/Zod request validation
-│   │   └── errorHandler.jsx
+│   │   ├── validate.js          # Joi/Zod request validation
+│   │   └── errorHandler.js
 │   ├── db/
-│   │   ├── pool.jsx              # pg Pool instance
+│   │   ├── pool.js              # pg Pool instance
 │   │   └── migrations/          # SQL migration files
 │   ├── utils/
-│   │   └── fileCleanup.jsx       # Remove temp .tex files
-│   └── app.jsx
+│   │   └── fileCleanup.js       # Remove temp .tex files
+│   └── app.js
 ├── python/
 │   └── generate_latex.py        # LaTeX generation script
 ├── .env
