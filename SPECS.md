@@ -116,7 +116,8 @@ src/
 | Tech Stack    | tag input |
 | Start Date    | month/yr  |
 | End Date      | month/yr  |
-| Description   | textarea  |
+| Description1  | textarea  |
+| Description2  | textarea  |
 | URL / Repo    | url       |
 
 #### Skills *(tag-based)*
