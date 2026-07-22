@@ -107,7 +107,7 @@ src/
 | Award Title  | text      |
 | Issuer       | text      |
 | Date         | month/yr  |
-| Description  | textarea  |
+| Description  | textarea  *(repeatable; max 3 descriptions)*|
 
 #### Projects *(repeatable)*
 | Field         | Type      |
@@ -116,8 +116,7 @@ src/
 | Tech Stack    | tag input |
 | Start Date    | month/yr  |
 | End Date      | month/yr  |
-| Description1  | textarea  |
-| Description2  | textarea  |
+| Description   | textarea  *(repeatable; max 3 descriptions)*|
 | URL / Repo    | url       |
 
 #### Skills *(tag-based)*
@@ -148,7 +147,6 @@ src/
 | Journal/Conf| text      |
 | Date        | month/yr  |
 | DOI / URL   | url       |
-| Abstract    | textarea  |
 
 ---
 
