@@ -76,7 +76,7 @@ src/
 | Email (Gmail) | email  | Validated format              |
 | Phone Number  | tel    | With country code             |
 | LinkedIn URL  | url    |                               |
-| GitHub URL    | url    |                               |
+| GitHub URL    | url    | Optional                      |
 | Website       | url    | Optional                      |
 
 #### Experience *(repeatable)*
@@ -135,7 +135,6 @@ src/
 | Cert Name       | text      |
 | Issuing Body    | text      |
 | Date Issued     | month/yr  |
-| Expiry Date     | month/yr (optional) |
 | Credential ID   | text      |
 | URL             | url       |
 
@@ -219,7 +218,7 @@ src/
 The Landing Page (`LandingPage.jsx`) serves as the welcoming entry point of the web application, presenting a modern, high-converting product showcase that routes users directly into the CV Builder. It must match the layout and design patterns shown in `landing_pc.png` and `landing_mobile.png`.
 
 #### 1.6.1 Navigation Header
-*   **Logo/Brand Name**: Displays "ResumeForge" alongside a document-themed icon.
+*   **Logo/Brand Name**: Displays "LaTeX.CV" alongside a document-themed icon.
 *   **Navigation Links (PC)**: Centered text links for "Features", "How it Works", and "Examples".
 *   **Action Button (PC)**: "Get Started" purple pill-shaped button with a right arrow icon, routing users to `/builder`.
 *   **Mobile View**: The navigation links and CTA are replaced by a responsive hamburger menu icon on the right side.
