@@ -70,16 +70,17 @@ src/
 #### Personal Details *(always visible, required)*
 | Field         | Type   | Notes                         |
 |---------------|--------|-------------------------------|
-| Full Name     | text   | Required                      |
+| First Name    | text   | Required                      |
+| Last Name     | text   | Required                      |
 | Job Title     | text   | e.g. "Software Engineer"      |
 | Location      | text   | City, Country                 |
 | Email (Gmail) | email  | Validated format              |
 | Phone Number  | tel    | With country code             |
 | LinkedIn URL  | url    |                               |
-| GitHub URL    | url    | Optional                      |
+| GitHub URL    | url    |                               |
 | Website       | url    | Optional                      |
 
-#### Experience *(repeatable)*
+#### Experience *(repeatable, required at least 1)*
 | Field        | Type      |
 |--------------|-----------|
 | Job Title/Position    | text      |
@@ -87,8 +88,7 @@ src/
 | Location     | text      |
 | Start Date   | month/yr  |
 | End Date     | month/yr or "Present" |
-| Description1  | textarea (bullet points) |
-| Description2  | textarea (bullet points) |
+| Description  | textarea  *(repeatable; min 1, max 3 descriptions, 120 characters each)*|
 
 #### Education *(repeatable)*
 | Field        | Type      |
@@ -99,7 +99,8 @@ src/
 | Start Date   | month/yr  |
 | End Date     | month/yr or "Present" |
 | GPA/GWA      | text (optional) |
-| Notes        | textarea  |
+| Scholarship  | text (optional) |
+
 
 #### Awards *(repeatable)*
 | Field        | Type      |
@@ -107,7 +108,7 @@ src/
 | Award Title  | text      |
 | Issuer       | text      |
 | Date         | month/yr  |
-| Description  | textarea  *(repeatable; max 3 descriptions)*|
+| Description  | textarea  *(repeatable; min 1, max 3 descriptions, 120 characters each)*|
 
 #### Projects *(repeatable)*
 | Field         | Type      |
@@ -116,8 +117,8 @@ src/
 | Tech Stack    | tag input |
 | Start Date    | month/yr  |
 | End Date      | month/yr  |
-| Description   | textarea  *(repeatable; max 3 descriptions)*|
-| URL / Repo    | url       |
+| Description   | textarea  *(repeatable; min 1, max 3 descriptions, 120 characters each)*|
+| URL / Repo    | url (optional)|
 
 #### Skills *(tag-based)*
 | Field        | Type      |
@@ -159,6 +160,7 @@ src/
   - Delete section button
   - Drag-to-reorder handle (optional v2)
 - Repeatable sections (Experience, Education, etc.) have an **"Add Entry"** button that appends a new blank entry form.
+- Repeatable descriptions have an **"Add Description"** button that adds another text area with a maximum of 120 characters. It should also have a delete description button. Max of 3 descriptions only.
 
 ### 1.3.1 Header Actions & Sign-In Flow
 
@@ -248,7 +250,7 @@ The Landing Page (`LandingPage.jsx`) serves as the welcoming entry point of the 
 *   **Mobile Sticky Bottom CTA**: A sticky/fixed bottom bar displaying a primary button "Start for Free" with a document icon to allow quick access to `/builder` at any point of scrolling.
 
 > [!NOTE]
-> **Branding Alignment**: While the landing page mockups use the name "ResumeForge", the form builder mockups use "CVcraft". The logo, brand name, and favicon should be consistently aligned across both the landing page and the builder page.
+> **Branding Alignment**: While the landing page mockups use the name "ResumeForge", the form builder mockups use "CVcraft". The logo, brand name, and favicon should be consistently aligned across both the landing page and the builder page. See `logos/logo.png` for the logo.
 
 ---
 
