@@ -93,19 +93,19 @@ src/
 #### Education *(repeatable)*
 | Field        | Type      |
 |--------------|-----------|
-| Degree       | text      |
-| Institution  | text      |
+| Degree Program      | text      |
+| Institution/University  | text      |
 | Location     | text      |
 | Start Date   | month/yr  |
 | End Date     | month/yr or "Present" |
 | GPA/GWA      | text (optional) |
-| Scholarship  | text (optional) |
+| Scholarships  | text (optional) *(repeatable, max 3)*|
 
 
-#### Awards *(repeatable)*
+#### Awards/Achievements *(repeatable)*
 | Field        | Type      |
 |--------------|-----------|
-| Award Title  | text      |
+| Award/Achievement Title  | text      |
 | Issuer       | text      |
 | Date         | month/yr  |
 | Description  | textarea  *(repeatable; min 1, max 3 descriptions, 120 characters each)*|
@@ -114,7 +114,6 @@ src/
 | Field         | Type      |
 |---------------|-----------|
 | Project Name  | text      |
-| Tech Stack    | tag input |
 | Start Date    | month/yr  |
 | End Date      | month/yr  |
 | Description   | textarea  *(repeatable; min 1, max 3 descriptions, 120 characters each)*|
@@ -125,7 +124,7 @@ src/
 |--------------|-----------|
 | Skill Groups | key-value (e.g. "Languages: Python, JS") |
 
-#### Characteristics *(tag-based)*
+#### Soft Skills *(tag-based)*
 | Field           | Type     |
 |-----------------|----------|
 | Characteristic  | tags     |
@@ -133,21 +132,22 @@ src/
 #### Certifications *(repeatable)*
 | Field           | Type      |
 |-----------------|-----------|
-| Cert Name       | text      |
+| Cert Name       | text,     |
 | Issuing Body    | text      |
 | Date Issued     | month/yr  |
-| Credential ID   | text      |
-| URL             | url       |
+| Credential ID   | text (Optional, but it is highly recommended to prove validity) |
+| URL             | url  (Optional, but it is highly recommended to prove validity)     |
 
 #### Research Publications *(repeatable)*
 | Field       | Type      |
 |-------------|-----------|
-| Title       | text      |
-| Authors     | text      |
+| Title       | text, required      |
+| Authors     | text (each with format: [Surname], [Firstname], [MiddleInitial]), required|
+| Institution | text      |
 | Journal/Conf| text      |
-| Date        | month/yr  |
+| Date        | month/yr, day/month/yr, or year (Required) |
 | DOI / URL   | url       |
-
+> [NOTE!] **For Research Publications:** At least one of the Institution, Journal/Conf, or DOI/URL must be present.
 ---
 
 ### 1.3 Section Management
@@ -160,6 +160,7 @@ src/
   - Delete section button
   - Drag-to-reorder handle (optional v2)
 - Repeatable sections (Experience, Education, etc.) have an **"Add Entry"** button that appends a new blank entry form.
+- For the Education section, the repeatable scholarships section should have an add button and delete button designated for it.
 - Repeatable descriptions have an **"Add Description"** button that adds another text area with a maximum of 120 characters. It should also have a delete description button. Max of 3 descriptions only.
 
 ### 1.3.1 Header Actions & Sign-In Flow
@@ -250,7 +251,7 @@ The Landing Page (`LandingPage.jsx`) serves as the welcoming entry point of the 
 *   **Mobile Sticky Bottom CTA**: A sticky/fixed bottom bar displaying a primary button "Start for Free" with a document icon to allow quick access to `/builder` at any point of scrolling.
 
 > [!NOTE]
-> **Branding Alignment**: While the landing page mockups use the name "ResumeForge", the form builder mockups use "CVcraft". The logo, brand name, and favicon should be consistently aligned across both the landing page and the builder page. See `logos/logo.png` for the logo.
+> **Branding Alignment**: While the landing page mockups use the name "ResumeForge", the form builder mockups use "CVcraft". The logo, brand name, and favicon should be consistently aligned across both the landing page and the builder page. See `logos` for the logos.
 
 ---
 
