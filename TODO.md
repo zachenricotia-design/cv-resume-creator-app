@@ -97,18 +97,18 @@
 ### Rate Limiting & Bloat Prevention
 - [x] Apply body size limit to Express parser: `app.use(express.json({ limit: '125kb' }))`
 - [x] Configure `express-rate-limit` for `POST /api/cv` (max 10 requests per hour per IP)
-- [ ] Configure general rate limiting for preview generation and export endpoints
+- [X] Configure general rate limiting for preview generation and export endpoints
 
 ### Inactivity Cleanup Service
-- [ ] Create database cleanup cron worker `src/utils/cleanupWorker.js` (using `node-cron` or simple daily timer)
-- [ ] Implement pruning query: `DELETE FROM cvs WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '3 days'`
-- [ ] Hook cleanup script to server start up process and run once every 24 hours
+- [X] Create database cleanup cron worker `src/utils/cleanupWorker.js` (using `node-cron` or simple daily timer)
+- [X] Implement pruning query: `DELETE FROM cvs WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '3 days'`
+- [X] Hook cleanup script to server start up process and run once every 24 hours
 
 
 ### Error Handling
-- [ ] Create `src/middleware/errorHandler.js`
-- [ ] Wrap all controllers in try/catch
-- [ ] Return consistent error shape: `{ error: true, message, statusCode }`
+- [X] Create `src/middleware/errorHandler.js`
+- [X] Wrap all controllers in try/catch
+- [X] Return consistent error shape: `{ error: true, message, statusCode }`
 
 ---
 
