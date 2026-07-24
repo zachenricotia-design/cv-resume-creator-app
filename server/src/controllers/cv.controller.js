@@ -5,13 +5,21 @@ const computeHash = (token) => {
   return crypto.createHash('sha256').update(token).digest('hex');
 };
 
-const requireAccess = (cv, token) => {
+const requireAccess = (cv, token, user) => {
   if (!cv) {
     return { status: 404, message: 'CV not found' };
   }
 
-  if (cv.user_id) {
-    return { status: 403, message: 'Authenticated CV access is not supported yet' };
+  if (cv.user_id !== null) {
+    if (!user) {
+      return { status: 401, message: 'Authentication required to access this CV' };
+    }
+
+    if (String(user.id) !== String(cv.user_id)) {
+      return { status: 403, message: 'Forbidden: you do not own this CV' };
+    }
+
+    return null;
   }
 
   if (!token) {
@@ -60,7 +68,7 @@ export const getCV = async (req, res, next) => {
     const accessToken = req.header('X-CV-Access-Token');
     const cv = await cvService.findCVById(id);
 
-    const accessError = requireAccess(cv, accessToken);
+    const accessError = requireAccess(cv, accessToken, req.user);
     if (accessError) {
       return res.status(accessError.status).json({ error: true, message: accessError.message });
     }
@@ -78,7 +86,7 @@ export const updateCV = async (req, res, next) => {
     const { personal, sections } = req.body;
     const cv = await cvService.findCVById(id);
 
-    const accessError = requireAccess(cv, accessToken);
+    const accessError = requireAccess(cv, accessToken, req.user);
     if (accessError) {
       return res.status(accessError.status).json({ error: true, message: accessError.message });
     }
@@ -96,7 +104,7 @@ export const deleteCV = async (req, res, next) => {
     const accessToken = req.header('X-CV-Access-Token');
     const cv = await cvService.findCVById(id);
 
-    const accessError = requireAccess(cv, accessToken);
+    const accessError = requireAccess(cv, accessToken, req.user);
     if (accessError) {
       return res.status(accessError.status).json({ error: true, message: accessError.message });
     }
